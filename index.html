@@ -10,7 +10,7 @@
 <style>
   :root{
     --gold-400:#f0b942;--gold-100:#fff9ed;--gold-200:#fff2d6;
-    --text-primary:#181818;--text-body:#323232;--text-gray:#757575;
+    --text-primary:#181818;--text-body:#323232;--text-gray:#6d6d6d;
     --surface-50:#fcfbf9;--surface-200:#f2efeb;--white:#fff;
     --gray-150:#e1e1e1;--gray-300:#e9e9e9;--gray-400:#cdcdcd;
     --green-200:#d2e8c3;--green-ink:#3f6b2a;--blue:#4f799e;--blue-100:#d0e5f7;
@@ -206,7 +206,7 @@
     </div>
 
     <!-- centered popup over the search page -->
-    <div class="d-overlay open" id="dOverlay">
+    <div class="d-overlay open" id="dOverlay" onclick="if(event.target===this)closeDesktop()">
       <div class="d-modal">
         <div class="d-mhead"><span class="bk">‹</span><h2>Contact Anastasia's Pet Services</h2><span class="x" onclick="closeDesktop()">✕</span></div>
         <div class="d-mbody" id="d-body"></div>
@@ -231,7 +231,7 @@
 </div>
 
 <script>
-const FEE=0.05, money=n=>'$'+n.toFixed(2);
+const FEE=0.05, money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const RATES={walk:{base:25,unit:'/walk',noun:'walk',label:'Dog Walking',desc:'in your neighborhood',ic:'🐕'},
              sit:{base:100,unit:'/night',noun:'night',label:'House Sitting',desc:'in your home',ic:'🏠'}};
 let svc='walk';
@@ -315,7 +315,7 @@ function render(){
     else{est.classList.remove('empty');lft.textContent=`${r.label} · ${n} ${r.noun}${n>1?'s':''}`;tot.textContent=money(per*n)+' est.';}
   });
   document.querySelectorAll('.cal-note').forEach(h=>{
-    h.textContent = n===0 ? `Tap the days you need — each adds one ${r.noun} to the estimate.`
+    h.textContent = n===0 ? `Select the days you need — each adds one ${r.noun} to the estimate.`
       : `${n} ${r.noun}${n>1?'s':''} selected · ${money(per)}${r.unit} each, fee included`;
   });
 }
