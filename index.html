@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yourgi Booking — Live Price Estimate (Web & Mobile Web)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold-400:#f0b942;--gold-100:#fff9ed;--gold-200:#fff2d6;
+    --text-primary:#181818;--text-body:#323232;--text-gray:#757575;
+    --surface-50:#fcfbf9;--surface-200:#f2efeb;--white:#fff;
+    --gray-150:#e1e1e1;--gray-300:#e9e9e9;--gray-400:#cdcdcd;
+    --green-200:#d2e8c3;--green-ink:#3f6b2a;--blue:#4f799e;--blue-100:#d0e5f7;
+    --pin:#ed7c59;
+    --font:"Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:#e7e5e1;color:var(--text-primary);-webkit-font-smoothing:antialiased;line-height:1.3}
+
+  header.review{background:#1c1b1a;color:#fcfcfc;padding:16px 24px;display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:80}
+  header.review h1{font-size:16px;font-weight:600}
+  header.review .sub{font-size:12px;color:#b9b6b1;margin-top:2px;max-width:640px}
+  .controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .ctl{display:flex;flex-direction:column;gap:5px}
+  .ctl .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#8a8681;font-weight:600}
+  .seg{display:inline-flex;background:#2f2d2b;border-radius:9px;padding:3px}
+  .seg button{border:0;background:transparent;color:#c9c6c1;font-family:var(--font);font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:7px;cursor:pointer}
+  .seg button.active{background:var(--gold-400);color:#181818;font-weight:600}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#d6d3ce;cursor:pointer;user-select:none;align-self:flex-end}
+  .toggle input{width:16px;height:16px;accent-color:var(--gold-400)}
+
+  .stage{padding:30px 20px 50px;display:flex;justify-content:center}
+  .hidden{display:none!important}
+
+  /* ===== shared modal-body bits ===== */
+  .grp{font-size:15px;font-weight:600;margin:0 0 10px}
+  .grp:not(:first-child){margin-top:18px}
+  .svc{display:flex;align-items:center;gap:12px;border:1.5px solid var(--gray-300);background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+  .svc .ic{width:40px;height:40px;border-radius:10px;background:var(--surface-200);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+  .svc .t{font-size:15px;font-weight:600}
+  .svc .t span{display:block;font-size:12.5px;color:var(--text-gray);font-weight:400;margin-top:1px}
+  .svc.sel{border-color:var(--gold-400);background:var(--gold-100)}
+
+  .cal{background:#fff;border:1px solid var(--gray-300);border-radius:14px;padding:12px}
+  .cal-h{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 10px;font-size:15px;font-weight:600}
+  .cal-h .a{border:0;background:none;font-size:16px;color:var(--text-body);padding:2px 8px;cursor:pointer}
+  .cal table{width:100%;border-collapse:collapse}
+  .cal th{font-size:11px;color:var(--text-gray);font-weight:500;padding-bottom:6px}
+  .cal td{text-align:center;padding:3px 0}
+  .cal td .d{width:34px;height:34px;line-height:34px;margin:0 auto;border-radius:50%;font-size:13px;cursor:pointer;color:var(--text-body)}
+  .cal td .d:hover{background:var(--surface-200)}
+  .cal td .d.sel{background:var(--gold-400);color:#181818;font-weight:600}
+  .cal td .d.dis{color:var(--gray-400);cursor:default}
+  .cal td .d.dis:hover{background:none}
+
+  /* Proposed-only running helper line, directly under the calendar (matches Figma) */
+  .cal-note{font-size:11.5px;color:var(--text-gray);font-weight:500;margin-top:10px}
+  body.before .cal-note{display:none}
+
+  .field{border:1.5px solid var(--gray-300);background:#fff;border-radius:12px;padding:11px 14px;font-size:14px;display:flex;align-items:center;justify-content:space-between;color:var(--text-body)}
+  .field .lab{font-size:11px;color:var(--text-gray);display:block;margin-bottom:2px}
+  .sublabel{font-size:12.5px;color:var(--text-body);font-weight:500;margin:0 0 8px}
+  .input{border:1.5px solid var(--gray-300);background:#fff;border-radius:12px;height:46px}
+  .loginline{font-size:12.5px;color:var(--text-gray);margin-top:8px}
+  .loginline a{color:var(--blue);font-weight:600;text-decoration:none}
+  .msg-help{font-size:12.5px;color:var(--text-gray);margin:0 0 8px;line-height:1.45}
+  .textarea{border:1.5px solid var(--gray-300);background:#f7f5f2;border-radius:12px;height:96px}
+
+  /* the fix — estimate summary in the footer (reuses existing price type; no new container) */
+  .est{display:flex;justify-content:space-between;align-items:flex-end;padding:2px 2px 12px;position:relative}
+  body.before .est{display:none}
+  .est .est-title{font-size:13px;font-weight:600;color:var(--text-body)}
+  .est .est-sub{font-size:11.5px;color:var(--text-gray);font-weight:500;margin-top:3px}
+  .est .est-sub b{color:var(--green-ink)}
+  .est .est-tot{font-size:20px;font-weight:700;color:var(--text-primary);white-space:nowrap}
+  .est.empty .est-tot{font-size:14px;color:var(--text-gray);font-weight:600}
+
+  .send{width:100%;background:var(--gold-400);border:0;border-radius:26px;padding:14px;font-family:var(--font);font-size:15px;font-weight:700;color:#181818;cursor:pointer}
+  .fine{font-size:10.5px;color:var(--text-gray);margin-top:12px;line-height:1.45}
+  .fine a{color:var(--blue)}
+  .before-tag{display:none;background:#3a3a3a;color:#fff;font-size:11px;font-weight:600;padding:7px 10px;border-radius:8px;text-align:center;margin-bottom:10px}
+  body.before .before-tag{display:block}
+
+  /* annotation pins */
+  .pin{position:absolute;z-index:60;min-width:22px;height:22px;padding:0 6px;background:var(--pin);color:#fff;border-radius:11px;font-size:12px;font-weight:600;display:none;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.35);border:2px solid #fff}
+  body.anno.after .pin{display:inline-flex}
+
+  /* ===== mobile web ===== */
+  .phone{width:404px;background:#000;border-radius:46px;padding:11px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+  .screen{background:#efe9dd;border-radius:36px;overflow:hidden;height:812px;position:relative}
+  .backdrop{position:absolute;inset:0;background:linear-gradient(#0006,#0006),linear-gradient(120deg,#8aa6bd,#b9c3c0);filter:saturate(.8)}
+  .m-modal{position:absolute;left:8px;right:8px;top:30px;bottom:8px;background:var(--surface-50);border-radius:26px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -4px 30px rgba(0,0,0,.25)}
+  .m-head{display:flex;align-items:center;gap:10px;padding:15px 18px;background:#f6f2ec;border-bottom:1px solid var(--gray-300);flex:none}
+  .m-head .bk{font-size:18px;color:var(--text-body)}
+  .m-head h2{font-size:15px;font-weight:600;flex:1}
+  .m-head .x{font-size:17px;color:var(--text-gray)}
+  .m-body{flex:1;overflow-y:auto;padding:16px 18px 8px}
+  .m-body::-webkit-scrollbar{width:0}
+  .m-foot{flex:none;background:#fff;border-top:1px solid var(--gray-300);padding:10px 18px 16px;box-shadow:0 -6px 18px rgba(0,0,0,.06);position:relative}
+
+  /* ===== web (desktop): SEARCH page + centered popup ===== */
+  .browser{width:1200px;max-width:97vw;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.22);border:1px solid #d8d5d0;position:relative}
+  .chrome-bar{background:#eceae6;height:42px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #dcd9d4}
+  .traffic{display:flex;gap:6px}.traffic i{width:11px;height:11px;border-radius:50%;display:block}
+  .traffic .r{background:#ff5f57}.traffic .y{background:#febc2e}.traffic .g{background:#28c840}
+  .chrome-url{flex:1;background:#fff;border-radius:7px;height:26px;display:flex;align-items:center;padding:0 12px;font-size:12px;color:#6c6862;border:1px solid #e2dfda}
+  .s-topnav{display:flex;align-items:center;gap:22px;padding:12px 22px;border-bottom:1px solid var(--gray-300)}
+  .s-logo{font-weight:800;font-size:20px;letter-spacing:-1px}.s-logo b{color:var(--gold-400)}
+  .s-pill{background:#181818;color:#fff;border-radius:20px;padding:7px 15px;font-size:13px;font-weight:600}
+  .s-navl{font-size:13.5px;color:var(--text-body);font-weight:500}
+  .s-navr{margin-left:auto;font-size:13.5px;color:var(--text-body);font-weight:600}
+  .s-filter{display:flex;align-items:center;gap:9px;padding:11px 22px;border-bottom:1px solid var(--gray-300)}
+  .fbtn{border:1px solid var(--gray-400);background:#fff;border-radius:9px;padding:7px 11px;font-size:12.5px;font-weight:500;color:var(--text-body)}
+  .s-count{font-size:12.5px;color:var(--text-gray);font-weight:500;margin-left:2px}
+  .s-share{margin-left:auto;border:1px solid var(--gray-400);background:#fff;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:500}
+  .s-split{display:flex;height:600px}
+  .s-list{width:44%;min-width:400px;overflow-y:auto;border-right:1px solid var(--gray-300)}
+  .s-list::-webkit-scrollbar{width:8px}.s-list::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:4px}
+  .s-row{display:flex;gap:16px;padding:18px 22px;border-bottom:1px solid var(--gray-300)}
+  .s-photo{width:150px;height:170px;flex:none;border-radius:12px;position:relative;overflow:hidden}
+  .s-photo .paw{position:absolute;right:8px;bottom:8px;width:38px;height:38px;background:var(--gold-400);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .s-rc{flex:1;min-width:0}
+  .s-name{font-size:17px;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+  .s-loc{font-size:13px;color:var(--text-gray);margin-top:3px}
+  .s-rate{font-size:13px;margin-top:4px}.s-rate .stars{color:var(--blue)}.s-rate .rev{color:var(--text-gray)}
+  .s-tier{display:inline-block;margin-top:8px;border:1px solid var(--gray-400);border-radius:8px;padding:3px 9px;font-size:12px;color:var(--text-body)}
+  .s-field{margin-top:10px}.s-field .k{font-size:13px;font-weight:700}.s-field .v{font-size:13px;color:var(--text-gray)}
+  .s-book{margin-top:14px;border:1.5px solid #181818;background:#fff;border-radius:22px;padding:10px 26px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer}
+  .s-map{flex:1;position:relative;background:
+      radial-gradient(circle at 40% 35%, #e8eef0, #dfe6e4 60%),
+      repeating-linear-gradient(0deg,transparent,transparent 58px,#d3dcd9 58px,#d3dcd9 60px),
+      repeating-linear-gradient(90deg,transparent,transparent 58px,#d3dcd9 58px,#d3dcd9 60px)}
+  .s-map .mpin{position:absolute;width:24px;height:24px;background:var(--gold-400);border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 5px rgba(0,0,0,.3)}
+
+  /* centered popup over search */
+  .d-overlay{position:absolute;inset:0;background:rgba(30,28,26,.55);display:none;align-items:flex-start;justify-content:center;z-index:30}
+  .d-overlay.open{display:flex}
+  .d-modal{width:720px;max-width:92%;margin:22px 0;background:var(--surface-50);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100% - 44px);box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .d-mhead{display:flex;align-items:center;gap:10px;padding:16px 22px;background:#f6f2ec;border-bottom:1px solid var(--gray-300);flex:none}
+  .d-mhead .bk{font-size:18px;color:var(--text-body)}
+  .d-mhead h2{font-size:16px;font-weight:600;flex:1}
+  .d-mhead .x{font-size:18px;color:var(--text-gray);cursor:pointer}
+  .d-mbody{overflow-y:auto;padding:18px 24px 8px}
+  .d-mfoot{flex:none;background:#fff;border-top:1px solid var(--gray-300);padding:10px 24px 18px;position:relative}
+
+  .legend{max-width:1000px;margin:0 auto;padding:4px 24px 60px}
+  .legend .box{background:#fff;border:1px solid #d8d5d0;border-radius:14px;padding:22px 24px}
+  .legend h3{font-size:15px;font-weight:600;margin-bottom:4px}
+  .legend .lede{font-size:13px;color:var(--text-gray);margin-bottom:16px}
+  .legend ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:14px 26px}
+  .legend li{display:flex;gap:11px;font-size:13px;color:var(--text-body);line-height:1.45}
+  .legend .n{flex:none;width:22px;height:22px;border-radius:11px;background:var(--pin);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .legend .n.rec{background:var(--green-200);color:var(--green-ink)}
+  .legend .n.q{background:var(--blue)}
+  .legend b{color:var(--text-primary)}
+  @media(max-width:1000px){.legend ul{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="anno after view-web">
+
+<header class="review">
+  <div>
+    <h1>Live price estimate in the Book Now flow — Web &amp; Mobile Web</h1>
+    <div class="sub">The real flow: “Book Now” opens the “Contact” popup — full-screen on mobile web, centered over the search results on web. This mirrors the Figma widgets field-for-field (Service, calendar, Preferred Time, Pets, Log In, Contact, Message, fine print); the only addition is the fee-inclusive estimate — a running line under the calendar and a summary above “Send Request.” Mock rates.</div>
+  </div>
+  <div class="controls">
+    <div class="ctl"><span class="lbl">Form factor</span>
+      <div class="seg" id="viewSeg"><button data-view="mobile">Mobile web</button><button data-view="web" class="active">Web</button></div>
+    </div>
+    <div class="ctl"><span class="lbl">State</span>
+      <div class="seg" id="stateSeg"><button data-state="before">Today (no price)</button><button data-state="after" class="active">Proposed</button></div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="annoToggle" checked> Annotations</label>
+  </div>
+</header>
+
+<!-- ===== MOBILE WEB ===== -->
+<div class="stage hidden" id="stage-mobile">
+  <div class="phone"><div class="screen">
+    <div class="backdrop"></div>
+    <div class="m-modal">
+      <div class="m-head"><span class="bk">‹</span><h2>Contact Anastasia's Pet Services</h2><span class="x">✕</span></div>
+      <div class="m-body" id="m-body"></div>
+      <div class="m-foot" id="m-foot"></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== WEB (search + popup) ===== -->
+<div class="stage" id="stage-web">
+  <div class="browser">
+    <div class="chrome-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="chrome-url">🔒 yourgi.com/app/search?zipcode=77002</div></div>
+    <div class="s-topnav"><div class="s-logo">Y<b>ourgi</b></div><span class="s-pill">Search Pet Care</span><span class="s-navl">Appointments</span><span class="s-navr">Log In</span></div>
+    <div class="s-filter"><span class="fbtn">⚙ Filters</span><span class="fbtn">◎ 77002</span><span class="fbtn">Any Date ▾</span><span class="fbtn">Any Time ▾</span><span class="fbtn">Pets ▾</span><span class="s-count">93 results</span><span class="s-share">⤴ Share</span></div>
+    <div class="s-split">
+      <div class="s-list" id="s-list"></div>
+      <div class="s-map">
+        <div class="mpin" style="left:24%;top:28%"></div><div class="mpin" style="left:40%;top:20%"></div>
+        <div class="mpin" style="left:55%;top:34%"></div><div class="mpin" style="left:34%;top:52%"></div>
+        <div class="mpin" style="left:62%;top:58%"></div><div class="mpin" style="left:47%;top:70%"></div>
+        <div class="mpin" style="left:72%;top:44%"></div>
+      </div>
+    </div>
+
+    <!-- centered popup over the search page -->
+    <div class="d-overlay open" id="dOverlay">
+      <div class="d-modal">
+        <div class="d-mhead"><span class="bk">‹</span><h2>Contact Anastasia's Pet Services</h2><span class="x" onclick="closeDesktop()">✕</span></div>
+        <div class="d-mbody" id="d-body"></div>
+        <div class="d-mfoot" id="d-foot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend" id="legend">
+  <div class="box">
+    <h3>What this proposes — Book Now flow, web &amp; mobile web</h3>
+    <div class="lede">Toggle <b>Form factor</b> and <b>State</b> (Today / Proposed). On Web, the “Contact” popup opens over the search page (click a row’s <b>Book Now</b> to reopen it). Tap calendar days to watch the estimate build. Every field matches the Figma widgets; the estimate is the only addition, built from existing components — see docs/component-inventory.md.</div>
+    <ul>
+      <li><span class="n rec">1</span><div><b>Fee-inclusive summary above “Send Request”</b> — “Dog Walking · N walks” with the fee-included total. Today this popup shows no price at any step.</div></li>
+      <li><span class="n rec">2</span><div><b>A running line under the calendar</b> — “N walks selected · $26.25/walk each, fee included” — so the number updates as dates are picked.</div></li>
+      <li><span class="n rec">3</span><div><b>The estimate builds live</b> as the parent picks service + days (rate × days × 1.05), identically on web and mobile web — it’s the same popup.</div></li>
+      <li><span class="n rec">✓</span><div><b>Existing components only:</b> the “Starting at / $XX.XX” price type, the popup’s sticky footer, and the gold “Send Request.” The live total is the one new concept, composed from these.</div></li>
+      <li><span class="n q">?</span><div><b>Open items:</b> what drives quantity (each day = one visit? do Pets / Add-Ons multiply?), and binding price vs. estimate (project-context.md, OQ 2 &amp; 3). Modeled as rate × days × 1.05.</div></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const FEE=0.05, money=n=>'$'+n.toFixed(2);
+const RATES={walk:{base:25,unit:'/walk',noun:'walk',label:'Dog Walking',desc:'in your neighborhood',ic:'🐕'},
+             sit:{base:100,unit:'/night',noun:'night',label:'House Sitting',desc:'in your home',ic:'🏠'}};
+let svc='walk';
+const selectedDays=new Set([3,4,5,6,7]);   // preselected: Aug 3–7 = "5 walks", matches Figma
+
+function calRows(){
+  const startDow=6, days=31, today=3; let html='',row='',dow=0;
+  for(let i=0;i<startDow;i++){row+='<td></td>';dow++;}
+  for(let d=1;d<=days;d++){const dis=d<today;
+    row+=`<td><div class="d ${dis?'dis':''}" ${dis?'':`data-d="${d}"`}>${d}</div></td>`;dow++;
+    if(dow===7){html+='<tr>'+row+'</tr>';row='';dow=0;}}
+  if(row){while(dow<7){row+='<td></td>';dow++;}html+='<tr>'+row+'</tr>';}
+  return html;
+}
+function svcCard(key){
+  const r=RATES[key];
+  return `<div class="svc ${key===svc?'sel':''}" data-svc="${key}">
+    <div class="ic">${r.ic}</div><div class="t">${r.label}<span>${r.desc}</span></div>
+  </div>`;
+}
+function bodyHTML(){
+  return `<div class="grp">Service</div>${svcCard('walk')}${svcCard('sit')}
+    <div class="cal"><div class="cal-h"><button class="a">‹</button><span>August 2026</span><button class="a">›</button></div>
+      <table><thead><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr></thead><tbody>${calRows()}</tbody></table>
+    </div>
+    <div class="cal-note"></div>
+    <div class="grp">Preferred Time</div><div class="field"><div><span class="lab">Start Time</span>8:00 AM</div><span>▾</span></div>
+    <div class="grp">Pets</div><div class="field">＋ Add a Pet</div>
+    <div class="loginline">Don't see your pets? <a href="#">Log In</a></div>
+    <div class="grp">Contact</div><div class="sublabel">Phone Number</div><div class="input"></div>
+    <div class="grp">Message</div>
+    <div class="msg-help">Tell your sitter a little more about your request (gate codes, allergies, expectations, etc.)</div>
+    <div class="textarea"></div>
+    <div style="height:6px"></div>`;
+}
+function footHTML(){
+  return `<div class="before-tag">Today: the price appears only after the request is sent ↓</div>
+    <div class="est"><span class="pin" style="left:0;top:-9px">1</span>
+      <div><div class="est-title est-lft">Dog Walking · 5 walks</div>
+        <div class="est-sub est-per">$26.25/walk · includes <b>5% service fee</b></div></div>
+      <div class="est-tot">$131.25 est.</div>
+    </div>
+    <button class="send">Send Request</button>
+    <div class="fine">By adding your phone number, you're saying it's okay to send you service-related text messages, including auto-dialed. You can adjust these communication preferences in your settings. <a>Terms of Service</a> and <a>Privacy Statement.</a></div>`;
+}
+
+// search rows behind the popup (web)
+const ROWS=[
+  {n:"Anastasia's Pet Services",loc:"Houston, TX",r:"5.0",rev:"1 review",tier:"Yourgi Pro",svc:"Dog Walking, House Sitting",acc:"Cats & Dogs",c:"linear-gradient(135deg,#8aa6bd,#4f799e)"},
+  {n:"Ron B.",loc:"Houston, TX",r:"5.0",rev:"2 reviews",tier:"Yourgi Pro",svc:"House Sitting",acc:"Dogs & Cats",c:"linear-gradient(135deg,#A26191,#7d4670)"},
+  {n:"Noah B.",loc:"Houston, TX",r:"",rev:"",tier:"Yourgi Pro",svc:"Dog Walking, House Sitting, Daycare, Boarding",acc:"Dogs & Cats",c:"linear-gradient(135deg,#ED7C59,#c85f3d)"},
+];
+document.getElementById('s-list').innerHTML = ROWS.map(x=>`
+  <div class="s-row">
+    <div class="s-photo" style="background:${x.c}"><span class="paw">🐾</span></div>
+    <div class="s-rc">
+      <div class="s-name">${x.n}</div>
+      <div class="s-loc">${x.loc}</div>
+      ${x.r?`<div class="s-rate">${x.r} <span class="stars">★★★★★</span> <span class="rev">${x.rev}</span></div>`:''}
+      <span class="s-tier">${x.tier}</span>
+      <div class="s-field"><div class="k">Services</div><div class="v">${x.svc}</div></div>
+      <div class="s-field"><div class="k">Accepts</div><div class="v">${x.acc}</div></div>
+      <button class="s-book" onclick="openDesktop()">Book Now</button>
+    </div>
+  </div>`).join('');
+
+// mount both popups
+document.getElementById('m-body').innerHTML=bodyHTML();
+document.getElementById('m-foot').innerHTML=footHTML();
+document.getElementById('d-body').innerHTML=bodyHTML();
+document.getElementById('d-foot').innerHTML=footHTML();
+
+function render(){
+  const r=RATES[svc], per=r.base*(1+FEE), n=selectedDays.size;
+  document.querySelectorAll('.svc').forEach(e=>e.classList.toggle('sel',e.dataset.svc===svc));
+  document.querySelectorAll('.d[data-d]').forEach(e=>e.classList.toggle('sel',selectedDays.has(+e.dataset.d)));
+  document.querySelectorAll('.est').forEach(est=>{
+    const lft=est.querySelector('.est-lft'), per_=est.querySelector('.est-per'), tot=est.querySelector('.est-tot');
+    per_.innerHTML=`${money(per)}${r.unit} · includes <b>5% service fee</b>`;
+    if(n===0){est.classList.add('empty');lft.textContent=`${r.label} · select days`;tot.textContent='Select dates';}
+    else{est.classList.remove('empty');lft.textContent=`${r.label} · ${n} ${r.noun}${n>1?'s':''}`;tot.textContent=money(per*n)+' est.';}
+  });
+  document.querySelectorAll('.cal-note').forEach(h=>{
+    h.textContent = n===0 ? `Tap the days you need — each adds one ${r.noun} to the estimate.`
+      : `${n} ${r.noun}${n>1?'s':''} selected · ${money(per)}${r.unit} each, fee included`;
+  });
+}
+document.addEventListener('click',e=>{
+  const s=e.target.closest('.svc'); if(s){svc=s.dataset.svc;render();return;}
+  const d=e.target.closest('.d[data-d]'); if(d){const n=+d.dataset.d; selectedDays.has(n)?selectedDays.delete(n):selectedDays.add(n); render();return;}
+});
+render();
+
+function setView(v){
+  document.body.classList.toggle('view-mobile',v==='mobile');
+  document.body.classList.toggle('view-web',v==='web');
+  document.getElementById('stage-mobile').classList.toggle('hidden',v!=='mobile');
+  document.getElementById('stage-web').classList.toggle('hidden',v!=='web');
+}
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.remove('active'));b.classList.add('active');setView(b.dataset.view);});
+document.querySelectorAll('#stateSeg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#stateSeg button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  const after=b.dataset.state==='after';document.body.classList.toggle('after',after);document.body.classList.toggle('before',!after);});
+document.getElementById('annoToggle').onchange=e=>{document.body.classList.toggle('anno',e.target.checked);document.getElementById('legend').classList.toggle('hidden',!e.target.checked);};
+
+function openDesktop(){document.getElementById('dOverlay').classList.add('open');}
+function closeDesktop(){document.getElementById('dOverlay').classList.remove('open');}
+</script>
+</body>
+</html>

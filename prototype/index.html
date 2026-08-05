@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yourgi — Price Upfront (Direction Prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Product design-system tokens pulled from the Figma handoff variables */
+    --gold-400:#f0b942;
+    --gold-100:#fff9ed;
+    --gold-200:#fff2d6;
+    --text-primary:#181818;
+    --text-body:#323232;
+    --text-gray:#757575;
+    --surface-50:#fcfbf9;
+    --surface-200:#f2efeb;
+    --white:#ffffff;
+    --gray-150:#e1e1e1;
+    --gray-300:#e9e9e9;
+    --gray-400:#cdcdcd;
+    --green-200:#d2e8c3;
+    --green-ink:#3f6b2a;
+    --blue-400:#4f799e;
+    --blue-100:#d0e5f7;
+    --font:"Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* review chrome */
+    --chrome-bg:#e7e5e1;
+    --pin:#ed7c59;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--chrome-bg);color:var(--text-primary);-webkit-font-smoothing:antialiased;line-height:1.3}
+
+  /* ---------- Review chrome ---------- */
+  header.review{background:#1c1b1a;color:#fcfcfc;padding:18px 24px;display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  header.review h1{font-size:17px;font-weight:600;letter-spacing:-0.2px}
+  header.review .sub{font-size:12.5px;color:#b9b6b1;font-weight:400;margin-top:2px;max-width:520px}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .seg{display:inline-flex;background:#2f2d2b;border-radius:9px;padding:3px}
+  .seg button{border:0;background:transparent;color:#c9c6c1;font-family:var(--font);font-size:13px;font-weight:500;padding:7px 14px;border-radius:7px;cursor:pointer}
+  .seg button.active{background:var(--gold-400);color:#181818;font-weight:600}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#d6d3ce;cursor:pointer;user-select:none}
+  .toggle input{width:16px;height:16px;accent-color:var(--gold-400)}
+
+  .stage{padding:34px 24px 60px;display:flex;justify-content:center}
+
+  /* ---------- Annotations ---------- */
+  .pin{position:absolute;z-index:20;min-width:22px;height:22px;padding:0 6px;background:var(--pin);color:#fff;border-radius:11px;font-size:12px;font-weight:600;display:none;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.3);border:2px solid #fff}
+  body.anno .pin{display:inline-flex}
+  .rec-ribbon{position:absolute;z-index:19;background:var(--green-200);color:var(--green-ink);font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;display:none;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  body.anno .rec-ribbon{display:block}
+
+  /* ---------- Phone frame ---------- */
+  .phone{width:390px;background:#000;border-radius:46px;padding:11px;box-shadow:0 24px 60px rgba(0,0,0,.28);position:relative}
+  .phone .screen{background:var(--surface-50);border-radius:36px;overflow:hidden;height:800px;position:relative;display:flex;flex-direction:column}
+  .statusbar{background:var(--surface-50);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;flex:none}
+  .statusbar .dots{letter-spacing:1px}
+  .urlbar{background:#efece7;margin:0 12px 8px;border-radius:9px;height:30px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:#6c6862;flex:none}
+
+  .appbar{display:flex;align-items:center;gap:12px;padding:6px 16px 12px;flex:none}
+  .appbar .back{width:30px;height:30px;border-radius:50%;border:1px solid var(--gray-300);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
+  .appbar h2{font-size:17px;font-weight:600}
+
+  .scroll{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+  .scroll::-webkit-scrollbar{width:0}
+
+  .filters{display:flex;gap:8px;padding:2px 16px 10px;flex-wrap:wrap}
+  .chip{border:1px solid var(--gray-300);background:#fff;border-radius:20px;padding:7px 12px;font-size:12.5px;font-weight:500;color:var(--text-body);display:inline-flex;gap:6px;align-items:center}
+  .chip.icon{padding:7px 9px}
+  .count{text-align:center;font-size:11px;color:var(--text-gray);font-weight:500;padding:2px 0 12px}
+
+  /* result cards grid (mobile) */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 20px}
+  .card{background:#fff;border:1px solid var(--gray-300);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .12s,box-shadow .12s;position:relative}
+  .card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+  .card .photo{height:104px;position:relative;display:flex;align-items:flex-end;padding:8px}
+  .avatar-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:rgba(255,255,255,.9)}
+  .badge{position:relative;z-index:2;background:rgba(255,255,255,.92);border-radius:7px;font-size:10px;font-weight:600;padding:3px 7px;display:inline-flex;gap:4px;align-items:center;color:var(--text-body)}
+  .badge.green{background:var(--green-200);color:var(--green-ink)}
+  .card .body{padding:9px 10px 11px}
+  .card .name{font-size:13.5px;font-weight:600;line-height:1.2}
+  .priceline{display:flex;align-items:baseline;justify-content:space-between;margin-top:5px;gap:4px}
+  .price-now{font-size:13.5px;font-weight:600;color:var(--text-primary)}
+  .price-now .unit{font-size:11px;font-weight:500;color:var(--text-gray)}
+  .rating{font-size:12px;font-weight:600;color:var(--text-body);white-space:nowrap}
+  .rating .star{color:var(--gold-400)}
+  .feenote{font-size:10px;color:var(--text-gray);font-weight:500;margin-top:2px}
+  .tier{margin-top:7px;font-size:10px;font-weight:600;color:#8a6d1f;background:var(--gold-200);display:inline-block;padding:2px 7px;border-radius:5px}
+  .tier.plain{background:var(--surface-200);color:var(--text-gray)}
+
+  /* provider detail (mobile) */
+  .hero{height:230px;position:relative;display:flex;align-items:center;justify-content:center;font-size:74px;font-weight:700;color:rgba(255,255,255,.9)}
+  .hero .heroback{position:absolute;left:14px;top:14px;width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+  .detail-body{padding:16px}
+  .detail-body h3{font-size:24px;font-weight:600}
+  .elite{display:inline-flex;gap:5px;align-items:center;background:var(--gold-200);color:#8a6d1f;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;margin:8px 0 10px}
+  .desc{font-size:14px;color:var(--text-body);line-height:1.5}
+  .revline{margin:12px 0 2px;font-size:13px;font-weight:600}
+  .revline .star{color:var(--gold-400)}
+  .revline .muted{color:var(--text-gray);font-weight:500}
+  .sec-title{font-size:16px;font-weight:600;margin:22px 0 10px}
+  .offer{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--gray-300);font-size:14px}
+  .offer .svc{display:flex;gap:10px;align-items:center;color:var(--text-body)}
+  .offer .amt{font-weight:600}
+  .offer .amt .unit{font-weight:500;color:var(--text-gray);font-size:12px}
+  .offer.sel{background:var(--gold-100);margin:0 -16px;padding:11px 16px;border-radius:10px;border-bottom:0}
+
+  /* sticky booking footer (mobile) */
+  .bookfooter{flex:none;background:#fff;border-top:1px solid var(--gray-300);padding:12px 16px 16px;position:relative;box-shadow:0 -6px 18px rgba(0,0,0,.05)}
+  .bf-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:11px}
+  .bf-who{font-size:14px;font-weight:600}
+  .bf-who span{display:block;font-size:12px;color:var(--text-gray);font-weight:500;margin-top:1px}
+  .bf-price{text-align:right}
+  .bf-price .big{font-size:20px;font-weight:600}
+  .bf-price .big .unit{font-size:12px;font-weight:500;color:var(--text-gray)}
+  .bf-price .fee{font-size:11px;color:var(--text-gray);font-weight:500;margin-top:1px}
+  .est-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface-200);border-radius:10px;padding:9px 12px;margin-bottom:11px;font-size:12.5px;color:var(--text-body);font-weight:500}
+  .stepper{display:inline-flex;align-items:center;gap:0;border:1px solid var(--gray-400);border-radius:8px;overflow:hidden;background:#fff}
+  .stepper button{width:28px;height:26px;border:0;background:#fff;font-size:15px;cursor:pointer;color:var(--text-body)}
+  .stepper span{min-width:26px;text-align:center;font-size:13px;font-weight:600}
+  .btn-cta{width:100%;background:var(--gold-400);border:0;border-radius:26px;padding:15px;font-family:var(--font);font-size:15px;font-weight:600;color:#181818;cursor:pointer}
+  .btn-cta:hover{filter:brightness(.97)}
+
+  /* ---------- Desktop frame ---------- */
+  .browser{width:1080px;max-width:96vw;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.22);border:1px solid #d8d5d0}
+  .chrome-bar{background:#eceae6;height:42px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #dcd9d4}
+  .traffic{display:flex;gap:6px}.traffic i{width:11px;height:11px;border-radius:50%;display:block}
+  .traffic .r{background:#ff5f57}.traffic .y{background:#febc2e}.traffic .g{background:#28c840}
+  .chrome-url{flex:1;background:#fff;border-radius:7px;height:26px;display:flex;align-items:center;padding:0 12px;font-size:12px;color:#6c6862;border:1px solid #e2dfda}
+  .d-body{display:flex;min-height:640px;background:var(--surface-50)}
+  .d-main{flex:1;padding:26px 30px;overflow:hidden}
+  .d-rail{width:330px;flex:none;padding:26px 26px 26px 0}
+  .d-hero{height:220px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:70px;font-weight:700;color:rgba(255,255,255,.9);margin-bottom:18px;position:relative}
+  .d-name{font-size:30px;font-weight:600}
+  /* desktop results row */
+  .d-results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .d-toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .d-toprow h2{font-size:22px;font-weight:600}
+  .booking-widget{position:sticky;top:20px;background:#fff;border:1px solid var(--gray-300);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.06);position:relative}
+  .bw-price{display:flex;align-items:baseline;gap:6px}
+  .bw-price .amt{font-size:30px;font-weight:600}
+  .bw-price .unit{font-size:14px;color:var(--text-gray);font-weight:500}
+  .bw-fee{font-size:12px;color:var(--text-gray);font-weight:500;margin-top:3px}
+  .bw-hr{height:1px;background:var(--gray-300);margin:16px 0}
+  .bw-line{display:flex;justify-content:space-between;font-size:13.5px;color:var(--text-body);margin-bottom:10px}
+  .bw-line.total{font-weight:600;color:var(--text-primary);font-size:15px}
+  .bw-svc{font-size:12px;color:var(--text-gray);margin-bottom:14px}
+  .segmini{display:inline-flex;border:1px solid var(--gray-300);border-radius:8px;overflow:hidden;margin:6px 0 14px}
+  .segmini button{border:0;background:#fff;font-family:var(--font);font-size:12px;font-weight:500;padding:6px 10px;cursor:pointer;color:var(--text-body);border-right:1px solid var(--gray-300)}
+  .segmini button:last-child{border-right:0}
+  .segmini button.on{background:var(--gold-100);color:#8a6d1f;font-weight:600}
+
+  .legend{max-width:1080px;margin:0 auto;padding:0 24px 50px}
+  .legend .box{background:#fff;border:1px solid #d8d5d0;border-radius:14px;padding:22px 24px}
+  .legend h3{font-size:15px;font-weight:600;margin-bottom:4px}
+  .legend .lede{font-size:13px;color:var(--text-gray);margin-bottom:16px}
+  .legend ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:14px 26px}
+  .legend li{display:flex;gap:11px;font-size:13px;color:var(--text-body);line-height:1.45}
+  .legend .n{flex:none;width:22px;height:22px;border-radius:11px;background:var(--pin);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .legend .n.rec{background:var(--green-200);color:var(--green-ink)}
+  .legend b{color:var(--text-primary)}
+  .hidden{display:none!important}
+  @media(max-width:760px){.legend ul{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="anno">
+
+<header class="review">
+  <div>
+    <h1>Move price early — direction prototype</h1>
+    <div class="sub">Shows a <b>fee-inclusive</b> estimate (base rate + 5% service fee) surfaced as early as the browse list, and again at the booking widget. Mock data · for direction review before engineering handoff.</div>
+  </div>
+  <div class="controls">
+    <div class="seg" id="platformSeg">
+      <button class="active" data-platform="mobile">Mobile</button>
+      <button data-platform="desktop">Desktop</button>
+    </div>
+    <label class="toggle"><input type="checkbox" id="annoToggle" checked> Annotations</label>
+  </div>
+</header>
+
+<!-- ============ MOBILE ============ -->
+<div class="stage" id="mobileStage">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="dots">▪▪▪ ⌃ ▮</span></div>
+      <div class="urlbar">🔒 yourgipet.com</div>
+
+      <!-- Screen A: results -->
+      <div id="m-results" style="display:flex;flex-direction:column;flex:1;min-height:0">
+        <div class="appbar"><div class="back" style="visibility:hidden">‹</div><h2>Results</h2></div>
+        <div class="filters">
+          <span class="chip icon">⇅</span><span class="chip icon">☰</span>
+          <span class="chip">Date, Time, Pets</span><span class="chip icon">↥</span>
+        </div>
+        <div class="count">4 sitters available</div>
+        <div class="scroll">
+          <div class="grid" id="m-grid"></div>
+        </div>
+      </div>
+
+      <!-- Screen B: detail -->
+      <div id="m-detail" style="display:none;flex-direction:column;flex:1;min-height:0">
+        <div class="scroll">
+          <div class="hero" id="m-hero"><div class="heroback" onclick="showResults()">‹</div><span id="m-hero-init"></span></div>
+          <div class="detail-body">
+            <h3 id="m-dname">Christian M.</h3>
+            <span class="elite">★ Elite Pro</span>
+            <p class="desc">Whether it's playtime, cuddles, or following special care instructions, I'm here to make sure your pet feels safe, happy, and loved while you're away.</p>
+            <div class="revline"><span class="star">★★★★★</span> 4.7 <span class="muted">· 94 reviews</span></div>
+            <div class="sec-title">What I offer</div>
+            <div class="offer sel">
+              <div class="svc">🐾 Dog Walking</div>
+              <div class="amt" id="m-offer-price">$26.25 <span class="unit">/walk · incl. fee</span></div>
+            </div>
+            <div class="offer"><div class="svc">🏠 House Sitting</div><div class="amt">$131.25 <span class="unit">/night · incl. fee</span></div></div>
+            <div class="offer"><div class="svc">🔔 Drop-In Visits</div><div class="amt">$42.00 <span class="unit">/hr · incl. fee</span></div></div>
+            <div style="height:14px"></div>
+          </div>
+        </div>
+        <!-- sticky booking footer -->
+        <div class="bookfooter">
+          <span class="pin" style="left:-8px;top:-11px">2</span>
+          <span class="pin" style="right:120px;top:6px">3</span>
+          <div class="est-row">
+            <span>Est. total · <span id="m-walkcount">10</span> walks</span>
+            <span class="stepper"><button onclick="stepWalks(-1)">−</button><span id="m-step">10</span><button onclick="stepWalks(1)">+</button></span>
+            <b id="m-esttotal">$262.50</b>
+          </div>
+          <div class="bf-row">
+            <div class="bf-who">Christian M.<span>Dog Walking</span></div>
+            <div class="bf-price"><div class="big">$26.25<span class="unit">/walk</span></div><div class="fee">Includes 5% service fee</div></div>
+          </div>
+          <button class="btn-cta">Request to Book</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DESKTOP ============ -->
+<div class="stage hidden" id="desktopStage">
+  <div style="display:flex;flex-direction:column;gap:26px;align-items:center;width:100%">
+
+    <!-- Desktop results -->
+    <div class="browser">
+      <div class="chrome-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="chrome-url">🔒 yourgipet.com/results</div></div>
+      <div style="padding:26px 30px 34px">
+        <div class="d-toprow"><h2>4 sitters available</h2><div style="display:flex;gap:8px"><span class="chip">Date, Time, Pets</span><span class="chip">Sort</span></div></div>
+        <div class="d-results-grid" id="d-grid"></div>
+      </div>
+    </div>
+
+    <!-- Desktop detail + booking widget -->
+    <div class="browser">
+      <div class="chrome-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="chrome-url">🔒 yourgipet.com/pro/christian-m</div></div>
+      <div class="d-body">
+        <div class="d-main">
+          <div class="d-hero" style="background:linear-gradient(135deg,#7FAACD,#4f799e)">C</div>
+          <div class="d-name">Christian M.</div>
+          <span class="elite">★ Elite Pro</span>
+          <p class="desc" style="max-width:560px;margin-top:8px">Whether it's playtime, cuddles, or following special care instructions, I'm here to make sure your pet feels safe, happy, and loved while you're away.</p>
+          <div class="revline"><span class="star">★★★★★</span> 4.7 <span class="muted">· 94 reviews</span></div>
+          <div class="sec-title">What I offer</div>
+          <div style="max-width:560px">
+            <div class="offer sel"><div class="svc">🐾 Dog Walking</div><div class="amt">$26.25 <span class="unit">/walk · incl. fee</span></div></div>
+            <div class="offer"><div class="svc">🏠 House Sitting</div><div class="amt">$131.25 <span class="unit">/night · incl. fee</span></div></div>
+            <div class="offer"><div class="svc">🔔 Drop-In Visits</div><div class="amt">$42.00 <span class="unit">/hr · incl. fee</span></div></div>
+          </div>
+        </div>
+        <div class="d-rail">
+          <div class="booking-widget">
+            <span class="pin" style="left:-9px;top:-9px">2</span>
+            <span class="pin" style="right:-9px;top:64px">3</span>
+            <div class="bw-svc">Dog Walking</div>
+            <div class="bw-price"><span class="amt">$26.25</span><span class="unit">/walk</span></div>
+            <div class="bw-fee">Includes 5% service fee</div>
+            <div class="segmini" id="d-svc"><button class="on">Dog Walking</button><button>House Sitting</button></div>
+            <div class="bw-hr"></div>
+            <div class="bw-line"><span>$25.00 × <span id="d-walks">10</span> walks</span><span id="d-sub">$250.00</span></div>
+            <div class="bw-line"><span>5% service fee</span><span id="d-fee">$12.50</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 4px">
+              <span style="font-size:13px;color:var(--text-body)">Number of walks</span>
+              <span class="stepper"><button onclick="stepWalks(-1)">−</button><span id="d-step">10</span><button onclick="stepWalks(1)">+</button></span>
+            </div>
+            <div class="bw-hr"></div>
+            <div class="bw-line total"><span>Estimated total</span><span id="d-total">$262.50</span></div>
+            <button class="btn-cta" style="margin-top:6px">Request to Book</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Legend ============ -->
+<div class="legend" id="legend">
+  <div class="box">
+    <h3>What this prototype is proposing</h3>
+    <div class="lede">Four annotated points. Toggle the pins off with the Annotations switch to see the clean screens.</div>
+    <ul>
+      <li><span class="n rec">1</span><div><b>Fee-inclusive price on the browse list (recommended earliest point).</b> Every pro card shows the true per-walk price — base + 5% fee — so parents compare real cost while choosing, before entering any flow. This is the earliest placement where a price is meaningful.</div></li>
+      <li><span class="n">2</span><div><b>Fee-inclusive price at the booking widget.</b> Matches the current Figma handoff — footer above “Request to Book” on mobile, beside the Book button on desktop — now showing the fee-inclusive number.</div></li>
+      <li><span class="n">3</span><div><b>Estimate gets more accurate as details are chosen.</b> total = base × walks × 1.05. Picking the number of walks turns the per-walk price into a real total, which is the “more accurate estimate” the ticket asks for.</div></li>
+      <li><span class="n" style="background:#4f799e">?</span><div><b>Open decision:</b> is the early number <b>binding</b> or an <b>estimate</b> that can change at checkout? The copy here says “includes 5% service fee” and stops short of promising the final charge — that call is still needed (see project-context.md, Open Question 3).</div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- annotation pins for mobile list (positioned relative to first card) -->
+<script>
+const FEE = 0.05;
+const money = n => '$' + n.toFixed(2);
+const providers = [
+  {id:'christian', name:'Christian M.', base:25, rating:4.9, tier:'Elite Pro', tierPlain:false, badge:'Available all 10 days', c1:'#7FAACD', c2:'#4f799e', init:'C', svc:'per walk'},
+  {id:'happydogs', name:'Happy Dogs Pet Resort', base:25, rating:4.9, tier:'Pet Resort', tierPlain:true, badge:'Open all 10 days', c1:'#f0b942', c2:'#d69b1e', init:'H', svc:'per walk'},
+  {id:'royd', name:'Roy D.', base:25, rating:4.9, tier:'Yourgi Pro', tierPlain:true, badge:'Available 7 of 10 days', c1:'#A26191', c2:'#7d4670', init:'R', svc:'per walk'},
+  {id:'katiea', name:'Katie A.', base:25, rating:4.9, tier:'Yourgi Pro', tierPlain:true, badge:'Available 4 of 10 days', c1:'#ED7C59', c2:'#c85f3d', init:'K', svc:'per walk'},
+];
+
+function feePrice(base){ return base*(1+FEE); }
+
+function cardHTML(p, withPin){
+  const fp = feePrice(p.base);
+  return `<div class="card" onclick="openDetail('${p.id}')">
+    <div class="photo" style="background:linear-gradient(135deg,${p.c1},${p.c2})">
+      ${withPin?`<span class="pin" style="left:8px;top:8px">1</span><span class="rec-ribbon" style="right:8px;top:8px">★ Recommended</span>`:''}
+      <div class="avatar-ph">${p.init}</div>
+      <span class="badge green">📅 ${p.badge}</span>
+    </div>
+    <div class="body">
+      <div class="name">${p.name}</div>
+      <div class="priceline">
+        <span class="price-now">${money(fp)}<span class="unit">/walk</span></span>
+        <span class="rating"><span class="star">★</span> ${p.rating}</span>
+      </div>
+      <div class="feenote">incl. 5% service fee</div>
+      <span class="tier ${p.tierPlain?'plain':''}">${p.tier}</span>
+    </div>
+  </div>`;
+}
+
+// render mobile + desktop grids
+document.getElementById('m-grid').innerHTML = providers.map((p,i)=>cardHTML(p, i===0)).join('');
+document.getElementById('d-grid').innerHTML = providers.map((p,i)=>cardHTML(p, i===0)).join('');
+
+// walks stepper (shared)
+let walks = 10;
+function renderTotals(){
+  const base = 25;
+  const sub = base*walks;
+  const fee = sub*FEE;
+  const total = sub+fee;
+  ['m-step','d-step'].forEach(id=>{const e=document.getElementById(id); if(e)e.textContent=walks;});
+  const mc=document.getElementById('m-walkcount'); if(mc)mc.textContent=walks;
+  const et=document.getElementById('m-esttotal'); if(et)et.textContent=money(total);
+  const dw=document.getElementById('d-walks'); if(dw)dw.textContent=walks;
+  const ds=document.getElementById('d-sub'); if(ds)ds.textContent=money(sub);
+  const df=document.getElementById('d-fee'); if(df)df.textContent=money(fee);
+  const dt=document.getElementById('d-total'); if(dt)dt.textContent=money(total);
+}
+function stepWalks(d){ walks=Math.max(1,walks+d); renderTotals(); }
+renderTotals();
+
+// navigation (mobile)
+function openDetail(id){
+  const p = providers.find(x=>x.id===id) || providers[0];
+  document.getElementById('m-dname').textContent = p.name;
+  document.getElementById('m-hero-init').textContent = p.init;
+  document.getElementById('m-hero').style.background = `linear-gradient(135deg,${p.c1},${p.c2})`;
+  document.querySelector('#m-detail .bf-who').firstChild.textContent = p.name;
+  document.getElementById('m-results').style.display='none';
+  document.getElementById('m-detail').style.display='flex';
+}
+function showResults(){
+  document.getElementById('m-detail').style.display='none';
+  document.getElementById('m-results').style.display='flex';
+}
+
+// platform toggle
+document.querySelectorAll('#platformSeg button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#platformSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const isMobile=b.dataset.platform==='mobile';
+    document.getElementById('mobileStage').classList.toggle('hidden',!isMobile);
+    document.getElementById('desktopStage').classList.toggle('hidden',isMobile);
+  };
+});
+
+// annotation toggle
+document.getElementById('annoToggle').onchange=e=>{
+  document.body.classList.toggle('anno',e.target.checked);
+  document.getElementById('legend').classList.toggle('hidden',!e.target.checked);
+};
+
+// desktop service segmented control (cosmetic)
+document.querySelectorAll('#d-svc button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#d-svc button').forEach(x=>x.classList.remove('on'));b.classList.add('on');};
+});
+</script>
+</body>
+</html>
